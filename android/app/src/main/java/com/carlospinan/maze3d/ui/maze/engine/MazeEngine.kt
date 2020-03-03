@@ -4,8 +4,7 @@ import android.graphics.*
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.math.MathUtils
-import kotlin.math.floor
-import kotlin.math.min
+import kotlin.math.*
 
 private const val TILE_SIZE = 8
 private const val TILE_WALL_COLOR = 0xFFFF0000.toInt()
@@ -842,6 +841,13 @@ class MazeEngine(
     private val screenWidth = mapWidth * TILE_SIZE
     private val screenHeight = mapHeight * TILE_SIZE
 
+    private val stripWidth = 4F
+    private val fov = 60F * Math.PI.toFloat() / 180F
+    private val fovHalf = fov / 2F
+    private val numRays = ceil(screenWidth / stripWidth).toInt()
+    private val viewDistance = (screenWidth / 2F) / tan(fovHalf)
+    private val twoPi = Math.PI.toFloat() * 2F
+
     private val player: Player =
         Player(x = 16F * TILE_SIZE, y = 10F * TILE_SIZE, tileSize = TILE_SIZE)
 
@@ -880,10 +886,12 @@ class MazeEngine(
         val scale =
             (canvas.height.toFloat() / canvas.width.toFloat()) * (min(scaleX, scaleY)) * 0.5F
 
-        canvas.scale(scale, scale)
+        canvas.scale(scaleX, scaleX)
         // canvas.scale(scaleX, scaleY)
 
         drawMiniMap(canvas)
+
+        castRays(canvas)
 
         canvas.restore()
     }
@@ -955,6 +963,28 @@ class MazeEngine(
             }
         }
         return true
+    }
+
+    // Ray Casting
+    private fun castRays(canvas: Canvas) {
+        for ((stripIndex, i) in (0 until numRays).withIndex()) {
+            val rayScreenPosition = (-numRays * 0.5F + i) * stripWidth
+            val rayViewDistance =
+                sqrt(rayScreenPosition * rayScreenPosition + viewDistance * viewDistance)
+            val rayAngle = asin(rayScreenPosition / rayViewDistance)
+            castSingleRay(
+                canvas,
+                player.rotation + rayAngle,
+                stripIndex
+            )
+        }
+    }
+
+    private fun castSingleRay(canvas: Canvas, rayAngle: Float, stripIndex: Int) {
+        var rayAngle = rayAngle % twoPi
+        if (rayAngle < 0) {
+            rayAngle += twoPi
+        }
     }
 
 }
