@@ -1,11 +1,11 @@
 package com.carlospinan.maze3d.ui.maze.engine
 
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
-import android.util.Log
+import android.graphics.*
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.math.MathUtils
+import kotlin.math.floor
+import kotlin.math.min
 
 private const val TILE_SIZE = 8
 private const val TILE_WALL_COLOR = 0xFFFF0000.toInt()
@@ -16,38 +16,838 @@ class MazeEngine(
 ) : View.OnTouchListener {
 
     private val maze = arrayOf(
-        intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
-        intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1),
-        intArrayOf(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
+        intArrayOf(
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            0,
+            3,
+            0,
+            0,
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            2,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            0,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            3,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            2,
+            0,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            2,
+            4,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            4,
+            3,
+            3,
+            4,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            4,
+            3,
+            3,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+        ),
+        intArrayOf(
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+        )
     )
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+    private val mapHeight = maze.size
+    private val mapWidth = maze[0].size
+
+    private val screenWidth = mapWidth * TILE_SIZE
+    private val screenHeight = mapHeight * TILE_SIZE
+
+    private val player: Player =
+        Player(x = 16F * TILE_SIZE, y = 10F * TILE_SIZE, tileSize = TILE_SIZE)
+
     private fun drawMiniMap(canvas: Canvas) {
-        canvas.drawColor(0xFFAAAAAA.toInt())
-
-        val mapHeight = maze.size
-        val mapWidth = maze[0].size
-
-        val screenWidth = mapWidth * TILE_SIZE
-        val screenHeight = mapHeight * TILE_SIZE
-
-        val scaleX = canvas.width.toFloat() / screenWidth.toFloat()
-        val scaleY = canvas.height.toFloat() / screenHeight.toFloat()
-
-        canvas.scale(scaleX, scaleY)
-
-        for(y in 0 until mapHeight) {
-            for(x in 0 until mapWidth) {
+        for (y in 0 until mapHeight) {
+            for (x in 0 until mapWidth) {
                 val tile = maze[y][x]
                 val rect = Rect(
                     x * TILE_SIZE,
@@ -56,7 +856,7 @@ class MazeEngine(
                     y * TILE_SIZE + TILE_SIZE
                 )
 
-                if(tile > 0) {
+                if (tile > 0) {
                     paint.color = TILE_WALL_COLOR
                 } else {
                     paint.color = TILE_EMPTY_COLOR
@@ -65,22 +865,94 @@ class MazeEngine(
             }
         }
 
+        player.draw(canvas)
+
     }
 
     fun draw(canvas: Canvas) {
+
+        canvas.save()
+
+        canvas.drawColor(0xFFAAAAAA.toInt())
+
+        val scaleX = canvas.width.toFloat() / screenWidth.toFloat()
+        val scaleY = canvas.height.toFloat() / screenHeight.toFloat()
+        val scale =
+            (canvas.height.toFloat() / canvas.width.toFloat()) * (min(scaleX, scaleY)) * 0.5F
+
+        canvas.scale(scale, scale)
+        // canvas.scale(scaleX, scaleY)
+
         drawMiniMap(canvas)
+
+        canvas.restore()
     }
 
     fun update(dt: Float) {
+        val newPosition = player.newPosition(dt)
+        if (isSafe(newPosition.x, newPosition.y)) {
+            player.x = newPosition.x
+            player.y = newPosition.y
+        }
+    }
 
+    private fun isSafe(x: Float, y: Float): Boolean {
+        val tile = positionToTile(x, y)
+        return tile.x in 0 until mapWidth &&
+                tile.y in 0 until mapHeight &&
+                maze[tile.y][tile.x] == 0
+    }
+
+    private fun normalizeTouch(x: Float, y: Float): PointF {
+        return PointF(x / mapWidth, y / mapHeight)
+    }
+
+    private fun tileTouch(x: Float, y: Float): Point {
+        val normalized = normalizeTouch(x, y)
+        return Point(
+            MathUtils.clamp(normalized.x.toInt(), 0, mapWidth),
+            MathUtils.clamp(normalized.y.toInt(), 0, mapHeight)
+        )
+    }
+
+    private fun positionToTile(x: Float, y: Float): Point {
+        val tileX = floor(x / TILE_SIZE).toInt()
+        val tileY = floor(y / TILE_SIZE).toInt()
+        return Point(
+            MathUtils.clamp(tileX, 0, mapWidth),
+            MathUtils.clamp(tileY, 0, mapHeight)
+        )
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        event?.let {
-                motionEvent ->
+        event?.let { motionEvent ->
             val x = motionEvent.x
             val y = motionEvent.y
-            Log.d("ONTOUCH", "$x ; $y -- $motionEvent")
+            val normalized = normalizeTouch(x, y)
+            val touchedTile = tileTouch(x, y)
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    when {
+                        touchedTile.x <= mapWidth * 0.2f -> {
+                            player.direction = -1
+                        }
+                        touchedTile.x >= mapWidth * 0.8f -> {
+                            player.direction = 1
+                        }
+                        else -> {
+                            player.speed = 1F
+                        }
+                    }
+
+                }
+                MotionEvent.ACTION_UP -> {
+                    player.speed = 0F
+                    player.direction = 0
+                }
+                else -> {
+
+                }
+            }
         }
         return true
     }

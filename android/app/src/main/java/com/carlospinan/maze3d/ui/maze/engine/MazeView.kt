@@ -35,11 +35,8 @@ class MazeView @JvmOverloads constructor(
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
-        canvas.save()
-
         engine.draw(canvas)
 
-        canvas.restore()
     }
 
 }
